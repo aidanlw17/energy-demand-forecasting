@@ -31,7 +31,7 @@ def PullData(station_ID, year_start, year_end):
     print('Done.')
 
     # Compare with required
-    year_static = list(range(year_start, year_end + 1))
+    year_static = list(range(int(year_start), int(year_end) + 1))
 
     # Pull Statscan weather data
     print('Pulling Statscan Weather Data for Station {}...'.format(station_ID))
