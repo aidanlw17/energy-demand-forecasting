@@ -5,14 +5,14 @@ import sys, os, subprocess
 import wget
 import datetime
 import time
+import csv
 
 # Default Toronto
 station_ID = 31688
 
 
-def PullData(station_ID, year_start, year_end):
+def pull_data(station_name, station_ID, year_start, year_end):
     # Get Datetimes
-    # year_now = int(datetime.datetime.today().strftime('%Y'))-1
 
     # Check directory
     print('Clean old files...')
@@ -41,25 +41,13 @@ def PullData(station_ID, year_start, year_end):
         for month in range(1, 13):
             wget.download(
                 "http://climate.weather.gc.ca/climate_data/bulk_data_e.html?format=csv&stationID={0}&Year={1}&Month={2}&Day=14&timeframe=1&submit=Download+Data".format(
-                    station_ID, year, month), out='wget_data/Weather')
+                    station_ID, year, month), out='../data/Weather Data/'+ str(station_name) + str(year) + str(month) + '.csv')
+            df = pd.read_csv('../data/Weather Data/'+ str(station_name) + str(year) + str(month) + '.csv', skiprows=15)
+            df['DateTime'] = pd.to_datetime(df[df.columns[0]])
+            df.set_index('DateTime', inplace=True, drop=True)
+            df.to_csv('../data/Weather Data/'+ str(station_name) + str(year) + str(month) + '.csv')
 
     print('Done.')
-
-    # Clean, Convert CSV to Dataframes
-
-    root = 'wget_data/Weather/'
-    filenames = []
-
-    for path, subdirs, files in os.walk(root):
-        for name in files:
-            filenames.append(os.path.join(path, name))
-
-    print('Reading weather csvs to dataframe...')
-    weather_data = pd.concat([pd.read_csv(f, skiprows=15) for f in filenames])
-    print('Done.')
-
-    return weather_data
-
 
 if __name__ == "__main__":
     """weather_data = PullData(31688, 2011, 2013)
@@ -67,9 +55,10 @@ if __name__ == "__main__":
     print(weather_data.head())
     print(weather_data.tail())"""
 
+    station_name = input('Input Station Name: ')
     station_ID = input('Input Station ID: ')
     year_start = input('Input Start Year: ')
     year_end = input('Input End Year: ')
+    
     print('Pulling weather data from {} to {}'.format(year_start, year_end))
-    weather_data = PullData(station_ID, year_start, year_end)
-    weather_data.to_csv('StatsCan Weather Data Station {} {}-{}'.format(station_ID, year_start, year_end))
+    weather_data = pull_data(station_name, station_ID, year_start, year_end)
